@@ -1,5 +1,5 @@
 {
-  "name": "nw.js",
+  "name": "numworks.js",
   "version": "1.0.0",
   "description": "Utility classes to interract with a Numworks calculator using WebUSB.",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/M4xi1m3/nw.js.git"
+    "url": "git+https://github.com/M4xi1m3/numworks.js.git"
   },
   "keywords": [
     "numworks",
