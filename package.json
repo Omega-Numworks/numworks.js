@@ -1,6 +1,6 @@
 {
   "name": "numworks.js",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Utility classes to interract with a Numworks calculator using WebUSB.",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/M4xi1m3/nw.js#readme",
   "dependencies": {
-    "webdfu": "^1.0.2"
+    "webdfu": "^1.0.5"
   }
 }
