@@ -1,4 +1,4 @@
-# WebDFU
+# NW.js
 
 ![NPM](https://img.shields.io/npm/v/nw.js?style=flat-square)
 ![Version](https://img.shields.io/github/package-json/v/M4xi1m3/nw.js?color=green&style=flat-square)
