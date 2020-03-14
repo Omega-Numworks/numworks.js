@@ -5,3 +5,9 @@
 ![License](https://img.shields.io/npm/l/numworks.js?color=blue&style=flat-square)
 
 Utility classes to interract with a Numworks calculator using WebUSB.
+
+## Licensing
+
+Numworks.js is released under the MIT license.
+
+Numworks is a registered trademark of Numworks SAS, 24 Rue Godot de Mauroy, 75009 Paris, France. Numworks SAS isn't associated in any shape or form with this project.
