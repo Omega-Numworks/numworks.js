@@ -25,11 +25,60 @@ class Numworks {
     /**
      * Get the model of the calculator.
      *
-     * @return  "0100" for a n0100, "0110" otherwise.
+     * @param   exclude_modded  Only include calculator which can be officially purchased from Numworks.
+     *                          This includes "0100" and "0110". If a modded Numworks is found, it'll show
+     *                          the unmoded version (eg. "0100-8M" becomes "0100").
+     *
+     * @return  "0110" for an unmodified n0110 (64K internal 8M external).                      "0110" is returned with {exclude_modded}.
+     *          "0110-0M" for a modified n0110 (64K internal, no external).                     "????" is returned with {exclude_modded}.
+     *          "0110-16M" for a modified n0110 (64K internal, 16M external).                   "0110" is returned with {exclude_modded}.
+     *          "0100" for unmodified n0100 (1M internal, no external).                         "0100" is returned with {exclude_modded}.
+     *          "0100-8M"  for a "Numworks++" with 8M external (1M internal, 8M external).      "0100" is returned with {exclude_modded}.
+     *          "0100-16M" for a "Numworks++" with 16M external (1M internal, 16M external).    "0100" is returned with {exclude_modded}.
+     *
+     *          Other flash sizes don't exist for the packaging the Numworks (SOIC-8) uses, so it's safe to assume
+     *          we'll only encounter 0M, 8M and 16M versions.
+     *
+     *          "????" if can't be determined (maybe the user plugged a DFU capable device which isn't a Numworks).
      */
-    getModel() {
-        var n = this.device.memoryInfo.segments[this.device.memoryInfo.segments.length-1].end;
-        return n > 0x080E0000 && n < 0x90000000 ? "0100" : "0110";
+    getModel(exclude_modded = true) {
+        var internal_size = 0;
+        var external_size = 0;
+        
+        for (let i = 0; i < this.device.memoryInfo.segments.length; i++) {
+            
+            if (this.device.memoryInfo.segments[i].start >= 0x08000000 && this.device.memoryInfo.segments[i].start <= 0x080FFFFF) {
+                internal_size += this.device.memoryInfo.segments[i].end - this.device.memoryInfo.segments[i].start;
+            }
+            
+            if (this.device.memoryInfo.segments[i].start >= 0x90000000 && this.device.memoryInfo.segments[i].start <= 0x9FFFFFFF) {
+                external_size += this.device.memoryInfo.segments[i].end - this.device.memoryInfo.segments[i].start;
+            }
+        }
+        
+        if (internal_size === 0x10000) {
+            if (external_size === 0) {
+                return (exclude_modded ? "????" : "0110-0M");
+            } else if (external_size === 0x800000) {
+                return "0110";
+            } else if (external_size === 0x1000000) {
+                return (exclude_modded ? "0110" : "0110-16M");
+            } else {
+                return "????";
+            }
+        } else if (internal_size === 0x100000) {
+            if (external_size === 0) {
+                return "0100";
+            } else if (external_size === 0x800000) {
+                return (exclude_modded ? "0100" : "0100-8M");
+            } else if (external_size === 0x1000000) {
+                return (exclude_modded ? "0100" : "0100-16M");
+            } else {
+                return "????";
+            }
+        } else {
+            return "????";
+        }
     }
     
     /**

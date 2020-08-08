@@ -6,6 +6,13 @@
 
 Utility classes to interract with a Numworks calculator using WebUSB.
 
+## Running the example
+
+```
+npm install
+npm start
+```
+
 ## Getting started with Numworks.js
 
 Numworks.js is simple and intuitive to use.
@@ -61,19 +68,25 @@ var calculator = new Numworks();
 
 navigator.usb.addEventListener("disconnect", function(e) {
   calculator.onUnexpectedDisconnect(e, function() {
+    calculator.autoConnect(connectedHandler);
+
     // Do stuff when the calculator gets disconnected.
   });
 });
 
+calculator.autoConnect(connectedHandler);
+
 calculator.autoConnect();
 
 function someEventHandler(e) {
-  calculator.detect(function() {
-    calculator.stopAutoConnect();   // It's connected, so autoConnect should stop.
-    // Do stuff...
-  }, function(error) {
+  calculator.detect(connectedHandler, function(error) {
     // Handle errors.
   });
+}
+
+function connectedHandler() {
+  calculator.stopAutoConnect(); // It's connected, so autoConnect should stop.
+  // Do stuff when the claculator gets connected.
 }
 ```
 
@@ -124,8 +137,8 @@ The script store can be read using `backupStorage` and can be written to using `
 Here is an example of adding a script in the storage
 ```js
 var storage = await calculator.backupStorage();
-records.push({"name": "test", "type":"py", "autoImport": true, "code": "print('Hello World!')\n"});
-await calculator.installStorage(records, function() {
+storage.records.push({"name": "test", "type":"py", "autoImport": true, "code": "print('Hello World!')\n"});
+await calculator.installStorage(storage, function() {
   // Do stuff after writing to the storage is done
 });
 ```
