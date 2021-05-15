@@ -1,6 +1,6 @@
 {
   "name": "numworks.js",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Utility classes to interract with a Numworks calculator using WebUSB.",
   "main": "index.js",
   "scripts": {
@@ -26,8 +26,8 @@
     "webdfu": "^1.0.5"
   },
   "devDependencies": {
-    "webpack": "^4.44.1",
+    "webpack": "^4.46.0",
     "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "webpack-dev-server": "^3.11.2"
   }
 }

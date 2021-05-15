@@ -1,7 +1,7 @@
 
 import Numworks from '../Numworks.js'
 
-var calculator = new Numworks();
+var calculator = new Numworks.Recovery();
 
 var status = document.getElementById("status");
 var connect = document.getElementById("connect");
@@ -40,11 +40,6 @@ async function connected() {
 
   var html_content = "Model: " + calculator.getModel(false) + "<br/>";
 
-  if (model !== "????") {
-    html_content += "Platform info: <br/><pre>" + JSON.stringify(await calculator.getPlatformInfo(), null, 4) + "</pre><br/>";
-
-    html_content += "Storage: <br/><pre>" + JSON.stringify(await calculator.backupStorage(), null, 4) + "</pre><br/>";
-  }
 
   content.innerHTML = html_content;
 }
