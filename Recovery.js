@@ -62,6 +62,10 @@ class Recovery {
      */
     async flashRecovery(buffer) {
         this.device.startAddress = 0x20030000;
+        // This is needed because the STM32F73x bootloader starts in dfuERROR status,
+        // for a weird reason that I spend hours figuring out, but didn't find.
+        // Better to not think about it.
+        await this.device.clearStatus();
         await this.device.do_download(this.transferSize, buffer, true);
     }
     
