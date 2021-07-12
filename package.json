@@ -4,8 +4,8 @@
   "description": "Utility classes to interract with a Numworks calculator using WebUSB.",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --config example/webpack.config.js",
-    "build": "webpack --config example/webpack.config.js"
+    "start": "webpack-dev-server --config conf/dev.webpack.config.js",
+    "build": "webpack --config conf/build.webpack.config.js"
   },
   "repository": {
     "type": "git",
