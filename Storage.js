@@ -13,18 +13,37 @@ class Storage {
         this.records = null;
     }
     
-    async __encodePyRecord(record) {
+    async __encodePyRecord(record, upsilonInstalled) {
         var content = new TextEncoder("utf-8").encode(record.code);
         
-        record.data = new Blob([
-            concatTypedArrays(
-                new Uint8Array([record.autoImport ? 1 : 0]),
+        if (upsilonInstalled) {
+            if (record.position === undefined) {
+                record.position = 0;
+            }
+            record.data = new Blob([
                 concatTypedArrays(
-                    content,
-                    new Uint8Array([0])
+                    new Uint8Array([record.autoImport ? 1 : 0]),
+                    concatTypedArrays(
+                        new Uint8Array([record.position]),
+                        concatTypedArrays(
+                            content,
+                            new Uint8Array([0])
+                        )
+                    )
                 )
-            )
-        ]);
+            ]);
+            delete record.position;
+        } else {
+            record.data = new Blob([
+                concatTypedArrays(
+                    new Uint8Array([record.autoImport ? 1 : 0]),
+                    concatTypedArrays(
+                        content,
+                        new Uint8Array([0])
+                    )
+                )
+            ]);
+        }
         
         delete record.autoImport;
         delete record.code;
@@ -77,11 +96,11 @@ class Storage {
         return new Blob([data]);
     }
     
-    async __encodeRecord(record) {
+    async __encodeRecord(record, upsilonInstalled) {
         var encoders = this.__getRecordEncoders();
         
         if (record.type in encoders) {
-            record = encoders[record.type](record);
+            record = encoders[record.type](record, upsilonInstalled);
         }
         
         return record;
@@ -97,11 +116,11 @@ class Storage {
      *
      * @throw   Errors      when too much data is passed.
      */
-    async encodeStorage(size) {
+    async encodeStorage(size, upsilonInstalled) {
         var records = Object.assign({}, this.records);
         
         for(var i in this.records) {
-            records[i] = await this.__encodeRecord(records[i]);
+            records[i] = await this.__encodeRecord(records[i], upsilonInstalled);
             
         }
         
@@ -161,11 +180,18 @@ class Storage {
         };
     }
     
-    async __parsePyRecord(record) {
+    async __parsePyRecord(record, upsilonInstalled) {
         var dv = new DataView(await record.data.arrayBuffer());
         
         record.autoImport = dv.getUint8(0) !== 0;
-        record.code = this.__readString(dv, 1, record.data.size - 1).content;
+        let codeStart = 1
+        if (upsilonInstalled) {
+            record.position = dv.getUint8(1);
+            codeStart = 2
+        } else {
+            record.position = 0
+        }
+        record.code = this.__readString(dv, codeStart, record.data.size - codeStart).content;
         
         delete record.data;
         
@@ -178,11 +204,11 @@ class Storage {
         };
     }
     
-    async __parseRecord(record) {
+    async __parseRecord(record, upsilonInstalled) {
         var parsers = this.__getRecordParsers();
         
         if (record.type in parsers) {
-            record = parsers[record.type](record);
+            record = parsers[record.type](record, upsilonInstalled);
         }
         
         return record;
@@ -193,7 +219,7 @@ class Storage {
      *
      * @param   blob        the encoded storage.
      */
-    async parseStorage(blob) {
+    async parseStorage(blob, upsilonInstalled) {
         var dv = new DataView(await blob.arrayBuffer());
         
         this.magik = dv.getUint32(0x00, false) === 0xBADD0BEE;
@@ -204,7 +230,7 @@ class Storage {
             this.records = await this.__sliceStorage(blob);
             
             for(var i in this.records) {
-                this.records[i] = await this.__parseRecord(this.records[i]);
+                this.records[i] = await this.__parseRecord(this.records[i], upsilonInstalled);
                 
                 // Throwing away non-python stuff, for convinience.
                 // if (this.records[i].type !== 'py') this.records.splice(i, 1);
