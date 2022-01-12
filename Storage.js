@@ -28,13 +28,10 @@ class Storage {
                 concatTypedArrays(
                     new Uint8Array([record.autoImport ? 1 : 0]),
                     concatTypedArrays(
-                        new Uint8Array([positionUint8[0]]),
+                        positionUint8,
                         concatTypedArrays(
-                            new Uint8Array([positionUint8[1]]),
-                            concatTypedArrays(
-                                content,
-                                new Uint8Array([0])
-                            )
+                            content,
+                            new Uint8Array([0])
                         )
                     )
                 )
