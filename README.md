@@ -122,7 +122,7 @@ The function `getModel` can be used to determine the model of the connected calc
     // Whether or not Upsilon is installed on the Numworks. If false, the rest of the Upsilon structure is absent
     "installed": true
     // The version of Upsilon detected on the calculator.
-    "version": "1.19.2",
+    "version": "1.0.0",
     // The type of Upsilon : if it is a derivate or not
     "osType": "2020704889",
     // A more simple way to get if it is a derivate or not, it is based on the os type
@@ -147,7 +147,7 @@ The script store can be read using `backupStorage` and can be written to using `
 Here is an example of adding a script in the storage
 ```js
 var storage = await calculator.backupStorage();
-storage.records.push({"name": "test", "type":"py", "autoImport": true, position:0, "code": "print('Hello World!')\n"});
+storage.records.push({"name": "test", "type": "py", "autoImport": true, position: 0, "code": "print('Hello World!')\n"});
 await calculator.installStorage(storage, function() {
   // Do stuff after writing to the storage is done
 });
