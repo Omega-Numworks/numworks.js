@@ -17,23 +17,31 @@ class Storage {
         var content = new TextEncoder("utf-8").encode(record.code);
         
         if (upsilonInstalled) {
+            // Upsilon's storage is encoded here
             if (record.position === undefined) {
                 record.position = 0;
             }
+            // Position is stored in an Uint16Array but we need to use a Uint8Array here
+            let positionUint16 = new Uint16Array([record.position]);
+            let positionUint8 = new Uint8Array(positionUint16.buffer, positionUint16.byteOffset, positionUint16.byteLength)
             record.data = new Blob([
                 concatTypedArrays(
                     new Uint8Array([record.autoImport ? 1 : 0]),
                     concatTypedArrays(
-                        new Uint8Array([record.position]),
+                        new Uint8Array([positionUint8[0]]),
                         concatTypedArrays(
-                            content,
-                            new Uint8Array([0])
+                            new Uint8Array([positionUint8[1]]),
+                            concatTypedArrays(
+                                content,
+                                new Uint8Array([0])
+                            )
                         )
                     )
                 )
             ]);
             delete record.position;
         } else {
+            // Epsilon/Omega's storage is encoded here
             record.data = new Blob([
                 concatTypedArrays(
                     new Uint8Array([record.autoImport ? 1 : 0]),
@@ -184,14 +192,13 @@ class Storage {
         var dv = new DataView(await record.data.arrayBuffer());
         
         record.autoImport = dv.getUint8(0) !== 0;
-        let codeStart = 1
         if (upsilonInstalled) {
-            record.position = dv.getUint8(1);
-            codeStart = 2
+            record.position = dv.getUint16(1, false)
+            record.code = this.__readString(dv, 3, record.data.size - 4).content;
         } else {
             record.position = 0
+            record.code = this.__readString(dv, 1, record.data.size - 1).content;
         }
-        record.code = this.__readString(dv, codeStart, record.data.size - codeStart).content;
         
         delete record.data;
         
