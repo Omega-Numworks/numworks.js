@@ -265,12 +265,26 @@ class Numworks {
                 data["storage"]["address"] = dv.getUint32(0x14 + offset, true);
                 data["storage"]["size"] = dv.getUint32(0x18 + offset, true);
             } else {
+                // Omega part
                 data["omega"]["installed"] = dv.getUint32(0x20, false) === 0xDEADBEEF && dv.getUint32(0x44, false) === 0xDEADBEEF;
                 if (data["omega"]["installed"]) {
                     data["omega"]["version"] = this.__readFString(dv, 0x24, 16);
                     data["omega"]["user"] = this.__readFString(dv, 0x34, 16);
                 }
-
+                // Upsilon part
+                data["upsilon"] = {};
+                data["upsilon"]["installed"] = dv.getUint32(0x48, false) === 0x69737055 && dv.getUint32(0x60, false) === 0x69737055;
+                if (data["upsilon"]["installed"]) {
+                    data["upsilon"]["version"] = this.__readFString(dv, 0x4C, 16);
+                    data["upsilon"]["osType"] =  dv.getUint32(0x5C, false);
+                    if (data["upsilon"]["osType"] == 0x78718279) {
+                        data["upsilon"]["official"] = true
+                    } else {
+                        data["upsilon"]["official"] = false
+                    }
+                    
+                }
+                // Global part
                 data["version"] = this.__readFString(dv, 0x04, 8);
                 data["commit"] = this.__readFString(dv, 0x0C, 8);
                 data["storage"] = {};
@@ -280,7 +294,6 @@ class Numworks {
         } else {
             data["omega"] = false;
         }
-        
         return data;
     }
     
@@ -291,7 +304,7 @@ class Numworks {
      */
     async getPlatformInfo() {
         this.device.startAddress = 0x080001c4;
-        const blob = await this.device.do_upload(this.transferSize, 0x48);
+        const blob = await this.device.do_upload(this.transferSize, 0x64);
         return this.__parsePlatformInfo(await blob.arrayBuffer());
     }
     
@@ -385,9 +398,9 @@ class Numworks {
      * @param   address     Storage address
      * @param   size        Storage size.
      *
-     * @return  The sotrage, as a Blob.
+     * @return  The storage, as a Blob.
      */
-    async __retreiveStorage(address, size) {
+    async __retrieveStorage(address, size) {
         this.device.startAddress = address;
         return await this.device.do_upload(this.transferSize, size + 8);
     }
@@ -414,7 +427,7 @@ class Numworks {
     async installStorage(storage, callback) {
         let pinfo = await this.getPlatformInfo();
         
-        let storage_blob = await storage.encodeStorage(pinfo["storage"]["size"]);
+        let storage_blob = await storage.encodeStorage(pinfo["storage"]["size"], pinfo["upsilon"]["installed"]);
         await this.__flashStorage(pinfo["storage"]["address"], await storage_blob.arrayBuffer());
         
         callback();
@@ -428,11 +441,11 @@ class Numworks {
     async backupStorage() {
         let pinfo = await this.getPlatformInfo();
         
-        let storage_blob = await this.__retreiveStorage(pinfo["storage"]["address"], pinfo["storage"]["size"]);
+        let storage_blob = await this.__retrieveStorage(pinfo["storage"]["address"], pinfo["storage"]["size"]);
         
         let storage = new Numworks.Storage();
         
-        await storage.parseStorage(storage_blob);
+        await storage.parseStorage(storage_blob, pinfo["upsilon"]["installed"]);
         
         return storage;
     }
